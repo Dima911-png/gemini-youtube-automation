@@ -7,6 +7,7 @@ on:
   push:
     paths:
       - '.github/workflows/main.yml'
+      - 'src/generator.py'
 
 # A run takes far longer than the gap between a manual dispatch and the daily
 # schedule, so serialise them — two runs pushing to main race each other.
