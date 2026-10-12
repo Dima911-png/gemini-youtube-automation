@@ -54,7 +54,7 @@ def produce_lesson_videos(lesson):
     print(f"\n▶️ Starting production for Lesson: '{lesson['title']}'")
     chapter_safe = re.sub(r'[^\w]', '_', str(lesson['chapter'])).strip('_')
     part_safe = re.sub(r'[^\w]', '_', str(lesson['part'])).strip('_')
-    unique_id = f"{datetime.datetime.now().strftime('%Y%m%d')}_{chapter_safe}_{part_safe}"
+    unique_id = f"{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{chapter_safe}_{part_safe}"
 
     lesson_content = generate_lesson_content(lesson['title'])
 
@@ -196,7 +196,11 @@ def main():
             try:
                 video_id = produce_lesson_videos(lesson)
                 if video_id == "LOCAL_ONLY":
-                    print(f"🎬 Rendered video files for review; lesson remains pending: {lesson['title']}")
+                    # Local rendering is a completed production step even without YouTube upload.
+                    # Mark this lesson complete so the next workflow run selects a different topic.
+                    lesson["status"] = "complete"
+                    lesson["youtube_id"] = None
+                    print(f"✅ Video rendered locally; marked lesson complete to prevent duplicate generation: {lesson['title']}")
                 elif video_id:
                     for original_lesson in plan['lessons']:
                         if original_lesson['title'].strip().lower() == lesson['title'].strip().lower():
