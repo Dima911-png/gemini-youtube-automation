@@ -241,7 +241,7 @@ def generate_lesson_content(lesson_title):
 
 #     if not is_thumbnail:
 #         header_height = int(height * 0.18)
-#         draw.rectangle([0, 0, width, header_height], fill=(25, 40, 65, 200))
+#         draw.rectangle([0, 0, width, header_height], fill=(238, 231, 216))
 #         title_bbox = draw.textbbox((0, 0), title, font=title_font)
 #         title_x = (width - (title_bbox[2] - title_bbox[0])) / 2
 #         title_y = (header_height - (title_bbox[3] - title_bbox[1])) / 2
@@ -299,11 +299,15 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
     title = thumbnail_title if is_thumbnail else slide_content.get("title", "")
     bg_image = get_pexels_image(title, video_type)
 
+    # Bright, clean educational palette. Keep backgrounds light even when Pexels is unavailable.
     if not bg_image:
-        bg_image = Image.new('RGBA', (width, height), color=(12, 17, 29))
-    bg_image = bg_image.resize((width, height)).filter(ImageFilter.GaussianBlur(5))
-    darken_layer = Image.new('RGBA', bg_image.size, (0, 0, 0, 150))
-    final_bg = Image.alpha_composite(bg_image, darken_layer).convert("RGB")
+        bg_image = Image.new('RGB', (width, height), color=(250, 248, 243))
+    else:
+        bg_image = bg_image.convert("RGB")
+    bg_image = bg_image.resize((width, height)).filter(ImageFilter.GaussianBlur(2))
+    # Wash out busy photos with a strong warm-white overlay for comfortable text contrast.
+    light_overlay = Image.new("RGB", bg_image.size, (250, 248, 243))
+    final_bg = Image.blend(bg_image, light_overlay, 0.84)
 
     if is_thumbnail and video_type == 'long':
         w, h = final_bg.size
@@ -347,14 +351,19 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
         for line in title_lines:
             bbox = draw.textbbox((0, 0), line, font=title_font)
             x = (width - (bbox[2] - bbox[0])) / 2
-            draw.text((x, y_text), line, font=title_font, fill=(255, 255, 255))
+            draw.text((x, y_text), line, font=title_font, fill=(48, 57, 68))
             y_text += line_height
     else:
         # Center title on thumbnail
         bbox = draw.textbbox((0, 0), title, font=title_font)
         x = (width - (bbox[2] - bbox[0])) / 2
         y = (height - (bbox[3] - bbox[1])) / 2
-        draw.text((x, y), title, font=title_font, fill=(255, 255, 255), stroke_width=2, stroke_fill="black")
+        # Warm ivory thumbnail with a dark readable title.
+        draw.rounded_rectangle((width * 0.06, height * 0.25, width * 0.94, height * 0.75), radius=36, fill=(250, 248, 243), outline=(214, 173, 112), width=5)
+        bbox = draw.textbbox((0, 0), title, font=title_font)
+        x = (width - (bbox[2] - bbox[0])) / 2
+        y = (height - (bbox[3] - bbox[1])) / 2
+        draw.text((x, y), title, font=title_font, fill=(48, 57, 68))
 
     if not is_thumbnail:
         # Main content block
@@ -380,18 +389,18 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
         for line in lines:
             bbox = draw.textbbox((0, 0), line, font=content_font)
             x = (width - (bbox[2] - bbox[0])) / 2
-            draw.text((x, y_text), line, font=content_font, fill=(230, 230, 230))
+            draw.text((x, y_text), line, font=content_font, fill=(48, 57, 68))
             y_text += line_height
 
         # Footer
         footer_height = int(height * 0.06)
-        draw.rectangle([0, height - footer_height, width, height], fill=(25, 40, 65, 200))
-        draw.text((40, height - footer_height + 12), f"{YOUR_NAME}", font=footer_font, fill=(180, 180, 180))
+        draw.rectangle([0, height - footer_height, width, height], fill=(238, 231, 216))
+        draw.text((40, height - footer_height + 12), f"{YOUR_NAME}", font=footer_font, fill=(95, 101, 108))
 
         if total_slides > 0:
             slide_num_text = f"Слайд {slide_number} из {total_slides}"
             bbox = draw.textbbox((0, 0), slide_num_text, font=footer_font)
-            draw.text((width - bbox[2] - 40, height - footer_height + 12), slide_num_text, font=footer_font, fill=(180, 180, 180))
+            draw.text((width - bbox[2] - 40, height - footer_height + 12), slide_num_text, font=footer_font, fill=(95, 101, 108))
 
     file_prefix = "thumbnail" if is_thumbnail else f"slide_{slide_number:02d}"
     path = output_dir / f"{file_prefix}.png"
@@ -404,7 +413,7 @@ def _subtitle_image(text, video_type):
     image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
     margin = 28 if video_type == "long" else 22
-    draw.rounded_rectangle((margin, 8, width - margin, height - 8), radius=22, fill=(10, 14, 25, 225), outline=(235, 184, 105, 255), width=3)
+    draw.rounded_rectangle((margin, 8, width - margin, height - 8), radius=22, fill=(250, 248, 243, 242), outline=(214, 173, 112, 255), width=3)
     try:
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 38 if video_type == "long" else 34)
     except OSError:
@@ -424,8 +433,8 @@ def _subtitle_image(text, video_type):
     for line in lines[:2]:
         bbox = draw.textbbox((0, 0), line, font=font)
         x = (width - (bbox[2] - bbox[0])) // 2
-        draw.text((x + 2, y + 2), line, font=font, fill=(0, 0, 0, 255))
-        draw.text((x, y), line, font=font, fill=(255, 255, 255, 255))
+        draw.text((x + 1, y + 1), line, font=font, fill=(255, 255, 255, 255))
+        draw.text((x, y), line, font=font, fill=(48, 57, 68, 255))
         y += line_height
     return np.asarray(image)
 
