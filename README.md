@@ -1,7 +1,7 @@
-<h1 align="center">🤖 Gemini YouTube Automation</h1>
+<h1 align="center">📐 Подготовка к ОГЭ по математике</h1>
 
 <p align="center">
-  <b>A fully autonomous AI bot that writes, produces, and uploads YouTube lessons daily — zero human input required.</b>
+  <b>Генератор русскоязычных видеоуроков и Shorts с пошаговыми решениями задач ОГЭ по математике.</b>
 </p>
 
 <p align="center">
@@ -147,11 +147,11 @@ python main.py
 
 ---
 
-## Content Progress
+## Темы курса
 
-The bot is currently producing the **"AI for Developers"** series — a beginner-friendly course that takes developers from zero to advanced AI.
+Проект создаёт русскоязычные уроки для подготовки к ОГЭ по математике: дроби, проценты, уравнения, функции, геометрия, вероятность, практические задачи и пробные варианты.
 
-Topics covered include: Generative AI, LLMs, Prompt Engineering, RAG, Vector Databases, LangGraph, Fine-tuning, Computer Vision, and more.
+По умолчанию загрузка на YouTube отключена. Запуск GitHub Actions выполняется вручную, а готовые MP4 доступны в артефактах запуска. Сначала проверь видео, звук и субтитры; публикация включается только отдельной настройкой.
 
 Track progress live in [content_plan.json](content_plan.json).
 

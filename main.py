@@ -19,6 +19,7 @@ from src.uploader import upload_to_youtube
 CONTENT_PLAN_FILE = Path("content_plan.json")
 OUTPUT_DIR = Path("output")
 LESSONS_PER_RUN = 1
+UPLOAD_TO_YOUTUBE = os.getenv("UPLOAD_TO_YOUTUBE", "false").strip().lower() in ("1", "true", "yes")
 
 def get_content_plan():
     if not CONTENT_PLAN_FILE.exists():
@@ -59,14 +60,14 @@ def produce_lesson_videos(lesson):
 
     print("\n--- Producing Long-Form Video ---")
 
-    intro_slide = {"title": lesson['title'], "content": f"Chapter {lesson['chapter']} | Part {lesson['part']}"}
-    outro_slide = {"title": "Thanks for Watching!", "content": "Like, Share & Subscribe for more daily AI content!\n#AIforDevelopers"}
+    intro_slide = {"title": lesson['title'], "content": f"Глава {lesson['chapter']} | Урок {lesson['part']}"}
+    outro_slide = {"title": "Удачи на ОГЭ!", "content": "Повтори правило, реши похожую задачу и проверь ответ.\nПодписывайся на новые разборы!"}
     all_slides = [intro_slide] + lesson_content['long_form_slides'] + [outro_slide]
 
     slide_scripts = [
-        f"Hello and welcome to AI for Developers. I'm {YOUR_NAME} talking bot. Today’s lesson is titled {lesson['title']}.",
+        f"Привет! Это канал «Подготовка к ОГЭ по математике». Сегодня разбираем тему: {lesson['title']}.",
         *[s['content'] for s in lesson_content['long_form_slides']],
-        "Thanks for watching! If you found this helpful, make sure to subscribe to our channel and hit the like button."
+        "Спасибо за урок! Повтори решение самостоятельно и возвращайся за новыми разборами ОГЭ."
     ]
 
     slide_audio_paths = []
@@ -90,7 +91,7 @@ def produce_lesson_videos(lesson):
 
     long_video_path = OUTPUT_DIR / f"long_video_{unique_id}.mp4"
     print(f"🎥 Creating long-form video at: {long_video_path}")
-    create_video(slide_paths, slide_audio_paths, long_video_path, 'long')
+    create_video(slide_paths, slide_audio_paths, long_video_path, 'long', subtitle_texts=slide_scripts)
 
     long_thumb_path = generate_visuals(
         output_dir=OUTPUT_DIR,
@@ -101,14 +102,14 @@ def produce_lesson_videos(lesson):
     print("\n--- Producing Short Video ---")
     # short_script = f"{lesson_content['short_form_highlight']}"
     short_script = (f"{lesson_content['short_form_highlight']}\n\n"
-    f"Link to the full lesson is in the description below.")
+    f"Полный разбор — в описании. Подписывайся на новые уроки по ОГЭ.")
     short_audio_mp3_path = OUTPUT_DIR / f"short_audio_{unique_id}.mp3"
     short_audio_path = text_to_speech(short_script, short_audio_mp3_path)
 
     short_slide_dir = OUTPUT_DIR / f"slides_short_{unique_id}"
     short_slide_content = {
-        "title": "Quick Tip!",
-        "content": f"{lesson_content['short_form_highlight']}\n\n#AI for developers by chaitanya"
+        "title": "Разбор задания ОГЭ",
+        "content": f"{lesson_content['short_form_highlight']}\n\n#ОГЭ #математика"
     }
     short_slide_path = generate_visuals(
         output_dir=short_slide_dir,
@@ -120,18 +121,22 @@ def produce_lesson_videos(lesson):
 
     short_video_path = OUTPUT_DIR / f"short_video_{unique_id}.mp4"
     print(f"🎥 Creating short video at: {short_video_path}")
-    create_video([short_slide_path], [short_audio_path], short_video_path, 'short')
+    create_video([short_slide_path], [short_audio_path], short_video_path, 'short', subtitle_texts=[short_script])
 
     short_thumb_path = generate_visuals(
         output_dir=OUTPUT_DIR,
         video_type='short',
-        thumbnail_title=f"Quick Tip: {lesson['title']}"
+        thumbnail_title=f"Задание ОГЭ: {lesson['title']}"
     )
+
+    if not UPLOAD_TO_YOUTUBE:
+        print("🛡️ Upload to YouTube disabled. Videos are being rendered only.")
+        return "LOCAL_ONLY"
 
     print("\n📤 Uploading to YouTube...")
     hashtags = lesson_content.get("hashtags", "#AI #Developer #LearnAI")
-    long_desc = f"Part of the 'AI for Developers' series by {YOUR_NAME}.\n\nToday's Lesson: {lesson['title']}\n\n{hashtags}"
-    long_tags = "AI, Artificial Intelligence, Developer, Programming, Tutorial, " + lesson['title'].replace(" ", ", ")
+    long_desc = f"Подготовка к ОГЭ по математике. Подробный разбор темы: {lesson['title']}\n\nРешай задания пошагово и проверяй ответы.\n\n{hashtags}"
+    long_tags = "ОГЭ, математика, подготовка к ОГЭ, разбор заданий, экзамен, " + lesson['title'].replace(" ", ", ")
 
     long_video_id = upload_to_youtube(
         long_video_path,
@@ -150,13 +155,13 @@ def produce_lesson_videos(lesson):
         short_title = f"{highlight[:90].rstrip()} #Shorts"
         # short_desc = f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n#AI #Programming #Tech #Developer"
         short_desc = (f"{lesson_content['short_form_highlight']}\n\n"
-                      f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n"
+                      f"Полный урок: https://www.youtube.com/watch?v={long_video_id}\n\n"
                       f"{hashtags}")
         upload_to_youtube(
             short_video_path,
             short_title.strip(),
             short_desc,
-            "AI,Shorts,TechTip",
+            "ОГЭ,математика,Shorts,подготовка к экзамену",
             short_thumb_path
         )
         return long_video_id
@@ -190,7 +195,9 @@ def main():
         for lesson_index, lesson in pending[:LESSONS_PER_RUN]:
             try:
                 video_id = produce_lesson_videos(lesson)
-                if video_id:
+                if video_id == "LOCAL_ONLY":
+                    print(f"🎬 Rendered video files for review; lesson remains pending: {lesson['title']}")
+                elif video_id:
                     for original_lesson in plan['lessons']:
                         if original_lesson['title'].strip().lower() == lesson['title'].strip().lower():
                             original_lesson['status'] = 'complete'

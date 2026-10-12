@@ -10,7 +10,8 @@ from io import BytesIO
 from google import genai
 from gtts import gTTS
 from gtts.tts import gTTSError
-from moviepy.editor import AudioFileClip, ImageClip, CompositeAudioClip, concatenate_videoclips, vfx
+from moviepy.editor import AudioFileClip, ImageClip, CompositeAudioClip, CompositeVideoClip, concatenate_videoclips, vfx
+import numpy as np
 from moviepy.config import change_settings
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from pathlib import Path
@@ -21,7 +22,7 @@ ASSETS_PATH = Path("assets")
 FONT_FILE = ASSETS_PATH / "fonts/arial.ttf"
 BACKGROUND_MUSIC_PATH = ASSETS_PATH / "music/bg_music.mp3"
 FALLBACK_THUMBNAIL_FONT = ImageFont.load_default()
-YOUR_NAME = "Chaitanya"
+YOUR_NAME = "Подготовка к ОГЭ"
 
 # Google's TTS endpoint throttles bursts from shared CI IPs. When it does, it answers
 # 200 OK with no audio stream, which gTTS surfaces as "Probable cause: Unknown".
@@ -79,7 +80,7 @@ def text_to_speech(text, output_path):
     for attempt in range(1, TTS_MAX_ATTEMPTS + 1):
         try:
             _throttle_tts()
-            tts = gTTS(text=text, lang='en', slow=False)
+            tts = gTTS(text=text, lang='ru', slow=False)
             tts.save(temp_mp3_path)
 
             # A throttled response can still produce a file — just an empty/truncated one.
@@ -116,16 +117,12 @@ def generate_curriculum(previous_titles=None):
         history = ""
         if previous_titles:
             formatted = "\n".join([f"{i+1}. {t}" for i, t in enumerate(previous_titles)])
-            history = f"The following lessons have already been created:\n{formatted}\n\nPlease continue from where this series left off.\n"
+            history = f"Уже созданные уроки:\n{formatted}\n\nПродолжи программу без повторения тем.\n"
 
         prompt = f"""
-        You are an expert AI educator. Generate a curriculum for a YouTube series called 'AI for Developers by {YOUR_NAME}'.
+        Ты — опытный преподаватель математики. Составь программу русскоязычного YouTube-курса «Подготовка к ОГЭ по математике».
         {history}
-        The style must be: 'Assume the viewer is a beginner or non-technical person starting their journey into AI as a developer.
-        Use simple real-world analogies, relatable examples, and then connect to technical concepts.'
-
-        The curriculum must guide a developer from absolute beginner to advanced AI, covering foundations like Generative AI, LLMs, Vector Databases, and Agentic AI...
-        ...then continue into deep AI topics like Reinforcement Learning, Transformers internals, multi-agent systems, tool use, LangGraph, AI architecture, and more.
+        Пиши на русском языке для учеников 8–9 класса. Покрой дроби, проценты, вычисления, текстовые задачи, уравнения, графики и функции, вероятность, статистику, геометрию, практические задачи и разбор вариантов ОГЭ. Иди от простого к сложному, не повторяй темы.
 
         Respond with ONLY a valid JSON object. The object must contain a key "lessons" which is a list of 20 lesson objects.
         Each lesson object must have these keys: "chapter", "part", "title", "status" (defaulted to "pending"), and "youtube_id" (defaulted to null).
@@ -146,14 +143,12 @@ def generate_lesson_content(lesson_title):
     try:
         client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
         prompt = f"""
-        You are creating a lesson for the 'AI for Developers by {YOUR_NAME}' series. The topic is '{lesson_title}'.
-        The style is: Assume the viewer is a beginner developer or non-tech person who wants to learn AI from scratch.
-        Use analogies and clear, simple language. Each concept must be explained from a developer's perspective, assuming no prior AI or ML knowledge.
+        Ты — преподаватель математики, готовящий ученика 8–9 класса к ОГЭ. Создай урок на русском языке по теме «{lesson_title}». Объясняй последовательно и простыми словами. Для каждой задачи дай условие, правило или формулу, пошаговое решение и проверку ответа. Следи за математической точностью.
 
         Generate a JSON response with three keys:
-        1. "long_form_slides": A list of 7 to 8 slide objects for a longer, more detailed main video. Each object needs a "title" and "content" key.
-        2. "short_form_highlight": A single, punchy, 1-2 sentence summary for a YouTube Short.
-        3. "hashtags": A string of 5-7 relevant, space-separated hashtags for this lesson (e.g., "#GenerativeAI #LLM #Developer","#NeuralNetworks #BeginnerAI #AIforDevelopers").
+        1. "long_form_slides": 7–8 слайдов подробного урока. Каждый объект имеет ключи "title" и "content"; весь текст на русском языке с примерами и пошаговыми решениями.
+        2. "short_form_highlight": Короткий интересный анонс на русском языке из 1–2 предложений для YouTube Shorts.
+        3. "hashtags": Строка из 5–7 хештегов на русском языке, например "#ОГЭ #ОГЭматематика #математика #подготовкакОГЭ #разборзаданий".
 
         Return only valid JSON.
         """
@@ -236,9 +231,9 @@ def generate_lesson_content(lesson_title):
 
 #         footer_height = int(height * 0.06)
 #         draw.rectangle([0, height - footer_height, width, height], fill=(25, 40, 65, 200))
-#         draw.text((40, height - footer_height + 12), f"AI for Developers by {YOUR_NAME}", font=footer_font, fill=(180, 180, 180))
+#         draw.text((40, height - footer_height + 12), f"{YOUR_NAME}", font=footer_font, fill=(180, 180, 180))
 #         if total_slides > 0:
-#             slide_num_text = f"Slide {slide_number} of {total_slides}"
+#             slide_num_text = f"Слайд {slide_number} из {total_slides}"
 #             slide_num_bbox = draw.textbbox((0, 0), slide_num_text, font=footer_font)
 #             draw.text((width - slide_num_bbox[2] - 40, height - footer_height + 12), slide_num_text, font=footer_font, fill=(180, 180, 180))
 #     file_prefix = "thumbnail" if is_thumbnail else f"slide_{slide_number:02d}"
@@ -342,10 +337,10 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
         # Footer
         footer_height = int(height * 0.06)
         draw.rectangle([0, height - footer_height, width, height], fill=(25, 40, 65, 200))
-        draw.text((40, height - footer_height + 12), f"AI for Developers by {YOUR_NAME}", font=footer_font, fill=(180, 180, 180))
+        draw.text((40, height - footer_height + 12), f"{YOUR_NAME}", font=footer_font, fill=(180, 180, 180))
 
         if total_slides > 0:
-            slide_num_text = f"Slide {slide_number} of {total_slides}"
+            slide_num_text = f"Слайд {slide_number} из {total_slides}"
             bbox = draw.textbbox((0, 0), slide_num_text, font=footer_font)
             draw.text((width - bbox[2] - 40, height - footer_height + 12), slide_num_text, font=footer_font, fill=(180, 180, 180))
 
@@ -354,53 +349,67 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
     final_bg.save(path)
     return str(path)
 
-def create_video(slide_paths, audio_paths, output_path, video_type):
-    """Creates a final video from slides and per-slide audio clips with optional background music."""
-    print(f"🎬 Creating {video_type} video...")
+def _subtitle_image(text, video_type):
+    """Create a styled subtitle panel for Russian narration."""
+    width, height = (1920, 150) if video_type == "long" else (1080, 190)
+    image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image)
+    margin = 28 if video_type == "long" else 22
+    draw.rounded_rectangle((margin, 8, width - margin, height - 8), radius=22, fill=(10, 14, 25, 225), outline=(235, 184, 105, 255), width=3)
     try:
-        if not slide_paths or not audio_paths or len(slide_paths) != len(audio_paths):
-            raise ValueError("Mismatch between slides and audio clips, or no slides provided.")
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 38 if video_type == "long" else 34)
+    except OSError:
+        font = ImageFont.load_default()
+    words, lines, current = str(text).split(), [], ""
+    max_width = width - 2 * margin - 44
+    for word in words:
+        candidate = (current + " " + word).strip()
+        if draw.textbbox((0, 0), candidate, font=font)[2] <= max_width:
+            current = candidate
+        else:
+            if current: lines.append(current)
+            current = word
+    if current: lines.append(current)
+    line_height = 43
+    y = max(12, (height - min(2, len(lines)) * line_height) // 2)
+    for line in lines[:2]:
+        bbox = draw.textbbox((0, 0), line, font=font)
+        x = (width - (bbox[2] - bbox[0])) // 2
+        draw.text((x + 2, y + 2), line, font=font, fill=(0, 0, 0, 255))
+        draw.text((x, y), line, font=font, fill=(255, 255, 255, 255))
+        y += line_height
+    return np.asarray(image)
 
-        image_clips = []
-        for i, (img_path, audio_path) in enumerate(zip(slide_paths, audio_paths)):
-            audio_clip = AudioFileClip(str(audio_path))
-            duration = audio_clip.duration + 0.5  # Padding
-            img_clip = (
-                ImageClip(img_path)
-                .set_duration(duration)
-                .set_audio(audio_clip)
-                .fadein(0.5)
-                .fadeout(0.5)
-            )
-            image_clips.append(img_clip)
 
-        final_video = concatenate_videoclips(image_clips, method="compose")
-
-        if BACKGROUND_MUSIC_PATH.exists():
-            print("🎵 Adding background music...")
-            bg_music = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.05)
-            if bg_music.duration < final_video.duration:
-                bg_music = bg_music.fx(vfx.loop, duration=final_video.duration)
-            else:
-                bg_music = bg_music.subclip(0, final_video.duration)
-
-            composite_audio = CompositeAudioClip([
-                final_video.audio.volumex(1.2),
-                bg_music
-            ])
-            final_video = final_video.set_audio(composite_audio)
-
-        final_video.write_videofile(
-            str(output_path),
-            fps=24,
-            codec="libx264",
-            audio_codec="aac",
-            audio_bitrate="192k",
-            preset="medium",
-            threads=4
-        )
-        print(f"✅ {video_type.capitalize()} video created successfully!")
-
-    except Exception as e:
-        print(f"❌ ERROR during video creation: {e}")
-        raise
+def create_video(slide_paths, audio_paths, output_path, video_type, subtitle_texts=None):
+    """Render the video with readable, styled subtitles and original narration quality."""
+    print(f"🎬 Creating {video_type} video...")
+    if not slide_paths or not audio_paths or len(slide_paths) != len(audio_paths):
+        raise ValueError("Mismatch between slides and audio clips, or no slides provided.")
+    subtitle_texts = subtitle_texts or [""] * len(slide_paths)
+    clips = []
+    for img_path, audio_path, narration in zip(slide_paths, audio_paths, subtitle_texts):
+        audio = AudioFileClip(str(audio_path))
+        duration = audio.duration + 0.5
+        base = ImageClip(img_path).set_duration(duration).set_audio(audio).fadein(0.35).fadeout(0.35)
+        words = str(narration or "").split()
+        chunks = [" ".join(words[i:i + 7]) for i in range(0, len(words), 7)]
+        overlays = []
+        if chunks:
+            weights = [max(1, len(chunk)) for chunk in chunks]
+            total = sum(weights)
+            cursor = 0.0
+            for chunk, weight in zip(chunks, weights):
+                chunk_duration = audio.duration * weight / total
+                overlay = ImageClip(_subtitle_image(chunk, video_type)).set_start(cursor).set_duration(chunk_duration).set_position(("center", "bottom"))
+                overlays.append(overlay)
+                cursor += chunk_duration
+        clips.append(CompositeVideoClip([base] + overlays, size=base.size).set_duration(duration) if overlays else base)
+    final_video = concatenate_videoclips(clips, method="compose")
+    if BACKGROUND_MUSIC_PATH.exists():
+        print("🎵 Adding quiet background music...")
+        music = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.035)
+        music = music.fx(vfx.loop, duration=final_video.duration) if music.duration < final_video.duration else music.subclip(0, final_video.duration)
+        final_video = final_video.set_audio(CompositeAudioClip([final_video.audio.volumex(1.0), music]))
+    final_video.write_videofile(str(output_path), fps=24, codec="libx264", audio_codec="aac", audio_bitrate="192k", preset="medium", threads=4)
+    print(f"✅ {video_type.capitalize()} video created successfully!")
