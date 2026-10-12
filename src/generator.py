@@ -80,6 +80,8 @@ def text_to_speech(text, output_path):
     for attempt in range(1, TTS_MAX_ATTEMPTS + 1):
         try:
             _throttle_tts()
+            # gTTS slow=False is still often perceived as sluggish for lesson narration.
+            # Speed up the rendered speech slightly while keeping pitch natural.
             tts = gTTS(text=text, lang='ru', slow=False)
             tts.save(temp_mp3_path)
 
@@ -88,6 +90,10 @@ def text_to_speech(text, output_path):
                 raise gTTSError("gTTS wrote an empty or truncated audio file.")
 
             audio = AudioSegment.from_mp3(temp_mp3_path)
+            # Make narration brisker and more engaging without changing pitch.
+            # 1.16x is a moderate boost; normalize afterwards to consistent loudness.
+            audio = audio.speedup(playback_speed=1.16, chunk_size=120, crossfade=25)
+            audio = audio.normalize(headroom=1.5)
             audio.export(wav_path, format="wav", codec="pcm_s16le")
             os.remove(temp_mp3_path)
 
