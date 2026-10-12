@@ -1,8 +1,7 @@
-name: Autonomous AI Course Generator
+name: Генератор видео — подготовка к ОГЭ
 
 on:
-  schedule:
-    - cron: '0 7 * * *' # 12:30 PM IST daily
+  # Manual runs only until the generated videos are checked.
   workflow_dispatch:
 
 # A run takes far longer than the gap between a manual dispatch and the daily
@@ -45,17 +44,12 @@ jobs:
           pip install -r requirements.txt
           echo "✅ Dependencies installed."
 
-      - name: 🔑 Restore API credentials from base64
-        run: |
-          echo "${{ secrets.CLIENT_SECRET_B64 }}" | base64 -d > client_secrets.json
-          echo "${{ secrets.CREDENTIALS_B64 }}" | base64 -d > credentials.json
-        shell: bash
-
       - name: 🚀 Run Autonomous Production Pipeline
         id: production-run
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          UPLOAD_TO_YOUTUBE: "false"
         run: python main.py
 
       - name: 🔎 Upload Audio Artifact for Debugging
