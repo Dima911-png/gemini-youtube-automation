@@ -60,7 +60,7 @@ def produce_lesson_videos(lesson):
 
     print("\n--- Producing Long-Form Video ---")
 
-    intro_slide = {"title": lesson['title'], "content": f"Chapter {lesson['chapter']} | Part {lesson['part']}"}
+    intro_slide = {"title": lesson['title'], "content": f"Глава {lesson['chapter']} | Урок {lesson['part']}"}
     outro_slide = {"title": "Удачи на ОГЭ!", "content": "Повтори правило, реши похожую задачу и проверь ответ.\nПодписывайся на новые разборы!"}
     all_slides = [intro_slide] + lesson_content['long_form_slides'] + [outro_slide]
 
@@ -102,7 +102,7 @@ def produce_lesson_videos(lesson):
     print("\n--- Producing Short Video ---")
     # short_script = f"{lesson_content['short_form_highlight']}"
     short_script = (f"{lesson_content['short_form_highlight']}\n\n"
-    f"Link to the full lesson is in the description below.")
+    f"Полный разбор — в описании. Подписывайся на новые уроки по ОГЭ.")
     short_audio_mp3_path = OUTPUT_DIR / f"short_audio_{unique_id}.mp3"
     short_audio_path = text_to_speech(short_script, short_audio_mp3_path)
 
@@ -126,7 +126,7 @@ def produce_lesson_videos(lesson):
     short_thumb_path = generate_visuals(
         output_dir=OUTPUT_DIR,
         video_type='short',
-        thumbnail_title=f"Quick Tip: {lesson['title']}"
+        thumbnail_title=f"Задание ОГЭ: {lesson['title']}"
     )
 
     if not UPLOAD_TO_YOUTUBE:
@@ -155,7 +155,7 @@ def produce_lesson_videos(lesson):
         short_title = f"{highlight[:90].rstrip()} #Shorts"
         # short_desc = f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n#AI #Programming #Tech #Developer"
         short_desc = (f"{lesson_content['short_form_highlight']}\n\n"
-                      f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n"
+                      f"Полный урок: https://www.youtube.com/watch?v={long_video_id}\n\n"
                       f"{hashtags}")
         upload_to_youtube(
             short_video_path,
