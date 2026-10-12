@@ -3,6 +3,10 @@ name: Генератор видео — подготовка к ОГЭ
 on:
   # Manual runs only until the generated videos are checked.
   workflow_dispatch:
+  # One diagnostic launch when this workflow file itself is updated.
+  push:
+    paths:
+      - '.github/workflows/main.yml'
 
 # A run takes far longer than the gap between a manual dispatch and the daily
 # schedule, so serialise them — two runs pushing to main race each other.
