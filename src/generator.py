@@ -107,6 +107,48 @@ def text_to_speech(text, output_path):
             time.sleep(delay)
 
 
+
+def _generate_content_with_fallback(client, prompt):
+    """Call Gemini with bounded retries and fallback models when capacity is unavailable."""
+    models = [
+        "gemini-3.5-flash-lite",
+        "gemini-3.1-flash-lite",
+        "gemini-3.8-flash",
+    ]
+    last_error = None
+    for model in models:
+        for attempt in range(1, 3):
+            try:
+                print(f"🤖 Requesting Gemini model {model} (attempt {attempt}/2)...")
+                response = client.models.generate_content(model=model, contents=prompt)
+                if not getattr(response, "text", None):
+                    raise RuntimeError(f"Gemini model {model} returned an empty response.")
+                return response
+            except Exception as exc:
+                last_error = exc
+                status = getattr(exc, "status_code", None)
+                message = str(exc).lower()
+                transient = status in (408, 429, 500, 502, 503, 504) or any(
+                    token in message for token in (
+                        "unavailable", "high demand", "resource_exhausted",
+                        "too many requests", "deadline exceeded", "not found",
+                        "model is not available", "not supported for generatecontent"
+                    )
+                )
+                # Authentication/configuration errors won't improve by retrying.
+                if status in (400, 401, 403):
+                    print(f"⚠️ Model {model} rejected the request (HTTP {status}); trying fallback if available.")
+                    break
+                if attempt < 2 and transient:
+                    delay = 5 * attempt + random.uniform(0, 2)
+                    print(f"⚠️ Gemini {model} temporarily failed: {exc}. Retrying in {delay:.1f}s...")
+                    time.sleep(delay)
+                else:
+                    print(f"⚠️ Gemini {model} failed: {exc}.")
+                    break
+    raise RuntimeError(f"All Gemini models failed. Last error: {last_error}") from last_error
+
+
 def generate_curriculum(previous_titles=None):
     """Generates the entire course curriculum using Gemini."""
     print("🤖 No content plan found. Generating a new curriculum from scratch...")
@@ -127,7 +169,7 @@ def generate_curriculum(previous_titles=None):
         Respond with ONLY a valid JSON object. The object must contain a key "lessons" which is a list of 20 lesson objects.
         Each lesson object must have these keys: "chapter", "part", "title", "status" (defaulted to "pending"), and "youtube_id" (defaulted to null).
         """
-        response = client.models.generate_content(model='gemini-3.8-flash', contents=prompt)
+        response = _generate_content_with_fallback(client, prompt)
         json_string = response.text.strip().replace("```json", "").replace("```", "")
         curriculum = json.loads(json_string)
         print("✅ New curriculum generated successfully!")
