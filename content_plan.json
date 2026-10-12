@@ -1,144 +1,60 @@
 {
-  "lessons": [
-    {
-      "chapter": 5,
-      "part": 21,
-      "title": "What is Generative AI? Your Creative AI Sidekick.",
-      "status": "complete",
-      "youtube_id": "Qq1krjY3pFg"
-    },
-    {
-      "chapter": 5,
-      "part": 22,
-      "title": "Introduction to Large Language Models (LLMs): The Brains Behind Smart Text.",
-      "status": "complete",
-      "youtube_id": "iTjuHizzwrk"
-    },
-    {
-      "chapter": 5,
-      "part": 23,
-      "title": "Prompt Engineering: How to Talk to AI and Get What You Want.",
-      "status": "complete",
-      "youtube_id": "zDittR2wKuU"
-    },
-    {
-      "chapter": 5,
-      "part": 24,
-      "title": "Embeddings: Giving AI a Sense of Meaning and Relationships.",
-      "status": "complete",
-      "youtube_id": "CgZT_N0HNZM"
-    },
-    {
-      "chapter": 5,
-      "part": 25,
-      "title": "Vector Databases: Where AI Stores Its Understanding of the World.",
-      "status": "complete",
-      "youtube_id": "sy0yAG9mG7s"
-    },
-    {
-      "chapter": 6,
-      "part": 26,
-      "title": "Retrieval Augmented Generation (RAG): AI That Reads Before It Speaks.",
-      "status": "complete",
-      "youtube_id": "yijosYFUdww"
-    },
-    {
-      "chapter": 6,
-      "part": 27,
-      "title": "Building Your First RAG Application: Smarter Chatbots, Smarter Answers.",
-      "status": "complete",
-      "youtube_id": "EkcrdBXIM8c"
-    },
-    {
-      "chapter": 6,
-      "part": 28,
-      "title": "Fine-tuning LLMs: Teaching AI Your Special Way of Doing Things.",
-      "status": "complete",
-      "youtube_id": "C6m8AC6CKd4"
-    },
-    {
-      "chapter": 6,
-      "part": 29,
-      "title": "LLM Architectures Simplified: The Encoder-Decoder & Decoder-Only Story.",
-      "status": "complete",
-      "youtube_id": "WcHa7HOZrU4"
-    },
-    {
-      "chapter": 6,
-      "part": 30,
-      "title": "Evaluation Metrics for LLMs: How to Know if Your AI is Actually Smart.",
-      "status": "complete",
-      "youtube_id": "PGmnG8cn15w"
-    },
-    {
-      "chapter": 7,
-      "part": 31,
-      "title": "Introduction to AI Agents: Giving Your AI the Power to Act and Think.",
-      "status": "complete",
-      "youtube_id": "ZEPZTmbK95Q"
-    },
-    {
-      "chapter": 7,
-      "part": 32,
-      "title": "Advanced Tool Use for LLM Agents: When AI Needs More Than Just Words.",
-      "status": "complete",
-      "youtube_id": "TrM62VCxbxs"
-    },
-    {
-      "chapter": 7,
-      "part": 33,
-      "title": "Agent Orchestration with LangChain/CrewAI: Building Teams of AI Assistants.",
-      "status": "pending",
-      "youtube_id": null
-    },
-    {
-      "chapter": 7,
-      "part": 34,
-      "title": "Building a Multi-Agent System: AI Teams for Complex Problem Solving.",
-      "status": "pending",
-      "youtube_id": null
-    },
-    {
-      "chapter": 7,
-      "part": 35,
-      "title": "LangGraph: Mapping Out Your AI's Thought Process for Complex Workflows.",
-      "status": "pending",
-      "youtube_id": null
-    },
-    {
-      "chapter": 8,
-      "part": 36,
-      "title": "Transformers Demystified: The Magic of 'Attention' in AI.",
-      "status": "pending",
-      "youtube_id": null
-    },
-    {
-      "chapter": 8,
-      "part": 37,
-      "title": "Vision Transformers (ViT): How AI Sees and Understands Images.",
-      "status": "pending",
-      "youtube_id": null
-    },
-    {
-      "chapter": 8,
-      "part": 38,
-      "title": "Multimodal AI: Giving Your AI Multiple Senses (Text, Image, Audio).",
-      "status": "pending",
-      "youtube_id": null
-    },
-    {
-      "chapter": 8,
-      "part": 39,
-      "title": "Introduction to Reinforcement Learning: AI That Learns by Playing and Doing.",
-      "status": "pending",
-      "youtube_id": null
-    },
-    {
-      "chapter": 8,
-      "part": 40,
-      "title": "RL for Developers: Teaching AI to Master Games and Control Robots.",
-      "status": "pending",
-      "youtube_id": null
-    }
-  ]
+“lessons”: [
+{
+“chapter”: 1,
+“part”: 1,
+“title”: “ОГЭ по математике: структура экзамена и план подготовки”,
+“status”: “pending”,
+“youtube_id”: null
+},
+{
+“chapter”: 1,
+“part”: 2,
+“title”: “ОГЭ по математике: обыкновенные и десятичные дроби”,
+“status”: “pending”,
+“youtube_id”: null
+},
+{
+“chapter”: 1,
+“part”: 3,
+“title”: “ОГЭ по математике: проценты и задачи на проценты”,
+“status”: “pending”,
+“youtube_id”: null
+},
+{
+“chapter”: 1,
+“part”: 4,
+“title”: “ОГЭ по математике: линейные уравнения”,
+“status”: “pending”,
+“youtube_id”: null
+},
+{
+“chapter”: 1,
+“part”: 5,
+“title”: “ОГЭ по математике: графики и функции”,
+“status”: “pending”,
+“youtube_id”: null
+},
+{
+“chapter”: 1,
+“part”: 6,
+“title”: “ОГЭ по математике: геометрия с нуля”,
+“status”: “pending”,
+“youtube_id”: null
+},
+{
+“chapter”: 1,
+“part”: 7,
+“title”: “ОГЭ по математике: типовые задачи с разбором”,
+“status”: “pending”,
+“youtube_id”: null
+},
+{
+“chapter”: 1,
+“part”: 8,
+“title”: “ОГЭ по математике: пробный вариант с решениями”,
+“status”: “pending”,
+“youtube_id”: null
+}
+]
 }
